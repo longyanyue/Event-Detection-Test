@@ -19,6 +19,7 @@ eventimpact<-300
 upthreshold <- 8
 lowthreshold <- 6
 i <- 1
+markancher <- -1
 trendline <- matrix(, nrow = datalength, ncol = 2)
 eventmarks <- numeric(datalength)
 trendlinestack <- dataset_pH$pH[1:windowsize]
@@ -26,6 +27,8 @@ trendline[1:windowsize,] <- runquantile(trendlinestack, windowsize, probs=c(lowe
 while((i+windowsize)<=datalength){
   temp_trendline <- runquantile(trendlinestack, windowsize, probs=c(lowermark, highermark))
 #####event detection process
+  if((as.numeric(dataset_pH$pH[i+windowsize]) > trendline[i+windowsize-1,2]  || as.numeric(dataset_pH$pH[i+windowsize]) < trendline[i+windowsize-1,1]) && markancher < 0)
+    markancher <- i+windowsize
   if(as.numeric(dataset_pH$pH[i+windowsize]) > trendline[i+windowsize-1,2] && as.numeric(dataset_pH$pH[i+windowsize]) > upthreshold){
     rate<-abs(as.numeric(dataset_pH$pH[i+windowsize])-trendline[i+windowsize-1,2])/trendline[i+windowsize-1,2]
     upbounds<-upbounds+10*rate
@@ -44,7 +47,7 @@ while((i+windowsize)<=datalength){
   else if(as.numeric(dataset_pH$pH[i+windowsize]) < trendline[i+windowsize-1,1] && as.numeric(dataset_pH$pH[i+windowsize]) < lowthreshold){
     rate<-abs(as.numeric(dataset_pH$pH[i+windowsize])-trendline[i+windowsize-1,1])/trendline[i+windowsize-1,1]
     lowbounds<-lowbounds+20*rate
-    upbounds<-upbounds-20*rate
+    upbounds<-upbounds-20*rate    
     if(as.numeric(dataset_pH$pH[i+windowsize]) < m_lowbounds*trendline[i+windowsize-1,1]){
       upbounds<-upbounds-m_weight
       lowbounds<-lowbounds+m_weight
@@ -59,16 +62,23 @@ while((i+windowsize)<=datalength){
   else{
     lowbounds<-lowbounds-100
     upbounds<-upbounds-100
+    
     if(lowbounds<0)
       lowbounds<-0
     if(upbounds<0)
       upbounds<-0
   }
-  if(upbounds>=eventimpact){
-    eventmarks[i+windowsize] <- 1
+  if(as.numeric(dataset_pH$pH[i+windowsize]) >= trendline[i+windowsize-1,1] && as.numeric(dataset_pH$pH[i+windowsize]) <= trendline[i+windowsize-1,2])
+    markancher <- -1
+    if(upbounds>=eventimpact){
+    #eventmarks[i+windowsize] <- 1
+    if(markancher>0)
+      eventmarks[markancher:(i+windowsize)] <- 1
   }
   else if(lowbounds>=eventimpact){
-    eventmarks[i+windowsize] <- -1
+    #eventmarks[i+windowsize] <- -1
+    if(markancher>0)
+      eventmarks[markancher:(i+windowsize)] <- -1
   }
   trendline[i+windowsize,] <- temp_trendline[windowsize,]
   if(eventmarks[i+windowsize]==0){
