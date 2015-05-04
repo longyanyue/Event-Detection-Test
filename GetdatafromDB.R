@@ -7,7 +7,7 @@ con <- dbConnect(drv, host='localhost', port='5432', dbname='postgres test',
 
 ## Submit and execute the query
 dataset_pH <- dbGetQuery(con, "SELECT * FROM \"sw\".\"Sydney2_pH1\"")
-dataset_pH <- dataset_pH[1:10000,]
+dataset_pH <- dataset_pH[1:30000,]
 ## fetch all elements from the result set
 dbListTables(con)
 
