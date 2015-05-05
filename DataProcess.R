@@ -90,7 +90,3 @@ while((i+windowsize)<=datalength){
 #    trendline[i+windowsize,] <- c(mean(as.numeric(temp_trendline[(1:windowsize),1])),mean(as.numeric(temp_trendline[(1:windowsize),2])))
   i <- i+1
 }
-
-
-
-
